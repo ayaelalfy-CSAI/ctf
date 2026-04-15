@@ -1,0 +1,37 @@
+(pip install
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+python-dotenv
+anthropic
+)
+---------------------------installed
+---------------------------
+
+python3 -m venv .venv  (env)
+source .venv/bin/activate (activate)
+uvicorn main:app --reload
+
+-------------------------------
+(pip install
+google-auth
+google-auth-oauthlib
+httpx 
+python-jose[cryptography]
+passlib[bcrypt]
+)
+-------------------------------installed
+-------------------------------
+
+sudo -u postgres psql
+GRANT ALL PRIVILEGES ON DATABASE ctf TO aya;
+GRANT ALL ON SCHEMA public TO aya;
+ALTER SCHEMA public OWNER TO aya;
+
+i will use this url to get the code from google
+https://accounts.google.com/o/oauth2/v2/auth?client_id=874710150809-0k2e3o85fulq1btgnkm2hdmc2uimivcl.apps.googleusercontent.com&redirect_uri=http://localhost:5173&response_type=code&scope=openid%20email%20profile&access_type=offline&prompt=consent
+
+
+
+
