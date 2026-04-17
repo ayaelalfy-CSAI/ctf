@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:15
+    container_name: ctf_postgres
+    environment:
+      POSTGRES_USER: aya
+      POSTGRES_PASSWORD: Aya1242004%23
+      POSTGRES_DB: ctf
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:                  
+      test: ["CMD-SHELL", "pg_isready -U aya -d ctf"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s  
+
+  app:
+    build: .
+    container_name: ctf_game
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload   
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped  
+
+volumes:
+  postgres_data:
