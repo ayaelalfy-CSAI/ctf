@@ -1,4 +1,4 @@
-#!/home/aya-elalfy/ArabGuard/.venv/bin/python3
+#!/home/aya-elalfy/ctf/.venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -11,7 +11,6 @@ class ThreatLog(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     character_id = Column(UUID(as_uuid=True), ForeignKey("characters.id"), nullable=False)
-    level_id = Column(UUID(as_uuid=True), ForeignKey("levels.id"), nullable=False)
     session_id = Column(String, index=True)
     raw_input = Column(Text)
     model_output = Column(Text)

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String
+from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from core.database import Base
 from sqlalchemy.dialects.postgresql import UUID
@@ -13,6 +13,7 @@ class User(Base):
     role = Column(String, default="user")
     google_id = Column(String, unique=True, index=True, nullable=True)
     photo = Column(String, nullable=True)
+    points = Column(Integer, default=0) 
 
     progress = relationship("UserProgress", back_populates="user")
     threat_logs = relationship("ThreatLog", back_populates="user")

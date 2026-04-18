@@ -7,7 +7,6 @@ from services.jwt_service import create_access_token
 from repositories.user_repository import get_user_by_email, create_user
 
 
-
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
 @router.post("/google/login", response_model=TokenResponse)
