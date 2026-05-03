@@ -20,6 +20,10 @@ def complete_character(
     if not character:
         raise HTTPException(status_code=404, detail="Character not found")
 
+    # اتحقق إن الشخصية مفتوحة
+    if current_user.points < character.points_required:
+        raise HTTPException(status_code=403, detail="Character is locked!")
+
     # اتحقق إنه مش خلّصه قبل كده
     progress = db.query(UserProgress).filter_by(
         user_id=current_user.id,
@@ -39,13 +43,15 @@ def complete_character(
     progress.completed = True
     progress.completed_at = datetime.now(timezone.utc)
 
-    # زود النقاط
-    current_user.points += character.points_reward
+    # الـ reward حسب الـ level
+    POINTS_REWARD = {1: 10, 2: 20, 3: 30, 4: 40, 5: 50, 6: 60, 7: 70, 8: 80}
+    points_earned = POINTS_REWARD.get(character.level, 10)
+    current_user.points += points_earned
     db.commit()
 
     return {
         "message": character.success_msg or "تم بنجاح!",
-        "points_added": character.points_reward,
+        "points_added": points_earned,
         "total_points": current_user.points
     }
 
@@ -54,46 +60,33 @@ def get_characters(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    characters = db.query(Character).order_by(Character.order_index).all()
+    characters = db.query(Character).order_by(Character.level).all()
     result = []
-    for char in characters:
-        # الشخصية الأولى مفتوحة دايماً
-        if char.order_index == 1:
-            is_unlocked = True
-        else:
-            # اتحقق إن الشخصية اللي قبلها اتخلصت
-            prev = db.query(Character).filter_by(
-                order_index=char.order_index - 1
-            ).first()
-            if prev:
-                prev_progress = db.query(UserProgress).filter_by(
-                    user_id=current_user.id,
-                    character_id=prev.id,
-                    completed=True
-                ).first()
-                is_unlocked = prev_progress is not None
-            else:
-                is_unlocked = True
+    has_active = False  # ← علم عشان نعمل active واحد بس
 
+    for char in characters:
         progress = db.query(UserProgress).filter_by(
             user_id=current_user.id,
             character_id=char.id
         ).first()
 
+        if progress and progress.completed:
+            status = "completed"
+        elif not has_active and current_user.points >= char.points_required:
+            status = "active"
+            has_active = True  # ← بعد ما نعمل واحد active مش هنعمل تاني
+        else:
+            status = "locked"
+
         result.append({
             "id": str(char.id),
-            "title": char.title,
-            "strength": char.strength,
             "persona": char.persona,
             "persona_desc": char.persona_desc,
-            "target": char.target,
-            "category": char.category,
-            "success_msg": char.success_msg,
-            "order_index": char.order_index,
-            "points_reward": char.points_reward,
-            "is_unlocked": is_unlocked,
-            "is_completed": progress.completed if progress else False
+            "avatar": char.avatar,
+            "level": char.level,
+            "status": status
         })
+
     return result
 
 @router.get("/my-points")
@@ -102,8 +95,4 @@ def get_my_points(current_user: User = Depends(get_current_user)):
         "points": current_user.points,
         "name": current_user.name,
         "photo": current_user.photo
-    }
-    return {
-        "points": current_user.points,
-        "name": current_user.name,
     }

@@ -5,7 +5,8 @@ from core.database import get_db
 from core.deps import get_current_user
 from models.user import User
 from services.chat_service import chat_with_character
-from repositories.progress_repository import is_character_unlocked
+from repositories.progress_repository import get_character_status
+from repositories.character_repository import get_character_by_id
 import uuid
 
 router = APIRouter(prefix="/chat", tags=["Chat"])
@@ -21,8 +22,17 @@ def chat(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    if not is_character_unlocked(db, current_user.id, body.character_id):
+    # جيب الشخصية
+    character = get_character_by_id(db, body.character_id)
+    if not character:
+        raise HTTPException(status_code=404, detail="Character not found")
+
+    # اتحقق من الـ status
+    status = get_character_status(db, current_user.id, character)
+    if status == "locked":
         raise HTTPException(status_code=403, detail="Character is locked!")
+    if status == "completed":
+        raise HTTPException(status_code=400, detail="Character already completed!")
 
     result = chat_with_character(
         db=db,
@@ -31,8 +41,5 @@ def chat(
         session_id=body.session_id,
         user_message=body.message
     )
-
-    if not result:
-        raise HTTPException(status_code=404, detail="Character not found")
 
     return result

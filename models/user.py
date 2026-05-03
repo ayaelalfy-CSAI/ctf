@@ -17,3 +17,11 @@ class User(Base):
 
     progress = relationship("UserProgress", back_populates="user")
     threat_logs = relationship("ThreatLog", back_populates="user")
+
+    @property
+    def completed_levels_count(self):
+        return sum(1 for p in self.progress if p.completed)
+
+    @property
+    def completed_levels(self):
+        return [p for p in self.progress if p.completed] 
