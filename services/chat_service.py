@@ -21,7 +21,7 @@ MODELS_TO_TRY = [
 def get_llm_response(system_prompt: str, user_input: str) -> str:
     for model_name in MODELS_TO_TRY:
         try:
-            completion = groq_client.chat.completions.create(  # ✅ مش groq_[client.chat]
+            completion = groq_client.chat.completions.create(  
                 model=model_name,
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -69,7 +69,7 @@ def chat_with_character(
             "blocked_by_arabguard": True
         }
 
-    # 4. اختار سر عشوائي من الـ pool ✅ secret_category
+    # 4. اختار سر عشوائي من الـ pool secret_category
     pool = settings.SECRET_POOL.get(
         character.secret_category,
         settings.SECRET_POOL.get("apartment_numbers", ["101"])
@@ -98,9 +98,9 @@ def chat_with_character(
             "is_compromised": True,
             "trace": {
                 "character": character.persona,
-                "target": character.target,          # ✅
+                "target": character.target,         
                 "secret_used": target_secret,
-                "category": character.secret_category  # ✅
+                "category": character.secret_category  
             }
         })
         complete_character(db, user_id, character_id)

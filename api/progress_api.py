@@ -83,6 +83,7 @@ def get_characters(
             "persona": char.persona,
             "persona_desc": char.persona_desc,
             "avatar": char.avatar,
+            "target": char.target,
             "level": char.level,
             "status": status
         })
@@ -96,3 +97,4 @@ def get_my_points(current_user: User = Depends(get_current_user)):
         "name": current_user.name,
         "photo": current_user.photo
     }
+

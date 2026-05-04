@@ -25,6 +25,7 @@ def get_characters_for_user(db: Session, user_id: uuid.UUID, user_points: int):
             "id": str(char.id),
             "persona": char.persona,
             "persona_desc": char.persona_desc,
+            "target": char.target,
             "avatar": char.avatar,
             "status": status
         })
