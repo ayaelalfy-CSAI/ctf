@@ -5,6 +5,7 @@ from repositories.character_repository import get_character_by_id
 from repositories.threat_log_repository import create_log
 from repositories.progress_repository import complete_character, get_character_status
 from services.analyzer_service import analyze_prompt, get_blocked_message
+from models.character import Character
 import uuid
 import random
 
@@ -21,7 +22,7 @@ MODELS_TO_TRY = [
 def get_llm_response(system_prompt: str, user_input: str) -> str:
     for model_name in MODELS_TO_TRY:
         try:
-            completion = groq_client.chat.completions.create(  
+            completion = groq_client.chat.completions.create(
                 model=model_name,
                 messages=[
                     {"role": "system", "content": system_prompt},
@@ -43,7 +44,6 @@ def chat_with_character(
     db: Session,
     user_id: uuid.UUID,
     character_id: uuid.UUID,
-    session_id: str,
     user_message: str
 ):
     # 1. جيب الشخصية
@@ -58,18 +58,22 @@ def chat_with_character(
     if status == "completed":
         return {"error": "completed", "reply": None, "is_compromised": False}
 
-    # 3. ArabGuard + Manual Filter
-    analysis = analyze_prompt(user_message)
+    # 3. ArabGuard
+    analysis = analyze_prompt(
+        user_input=user_message,
+        system_prompt=character.prompt_template
+    )
     is_attack = analysis.get("is_attack", False)
     if is_attack:
         return {
             "reply": get_blocked_message(),
             "is_compromised": False,
             "secret_revealed": None,
-            "blocked_by_arabguard": True
+            "blocked_by_arabguard": True,
+            "next_character_id": None
         }
 
-    # 4. اختار سر عشوائي من الـ pool secret_category
+    # 4. اختار سر عشوائي من الـ pool
     pool = settings.SECRET_POOL.get(
         character.secret_category,
         settings.SECRET_POOL.get("apartment_numbers", ["101"])
@@ -85,12 +89,17 @@ def chat_with_character(
     # 7. اتحقق من الاختراق
     is_compromised = target_secret.lower() in model_output.lower()
 
-    # 8. سجل في ThreatLog بس لو حصل اختراق
+    # 8. جيب الشخصية الجاية
+    next_character = None
     if is_compromised:
+        next_character = db.query(Character).filter_by(
+            level=character.level + 1  # ← الشخصية اللي بعدها
+        ).first()
+
+        # سجل في ThreatLog
         create_log(db, {
             "user_id": user_id,
             "character_id": character_id,
-            "session_id": session_id,
             "raw_input": user_message,
             "model_output": model_output,
             "decision": "compromised",
@@ -98,16 +107,20 @@ def chat_with_character(
             "is_compromised": True,
             "trace": {
                 "character": character.persona,
-                "target": character.target,         
+                "target": character.target,
                 "secret_used": target_secret,
-                "category": character.secret_category  
+                "category": character.secret_category
             }
         })
-        complete_character(db, user_id, character_id)
+
+        # اعمل complete وزود النقاط
+        complete_result = complete_character(db, user_id, character_id)
 
     return {
         "reply": model_output,
         "is_compromised": is_compromised,
         "secret_revealed": target_secret if is_compromised else None,
-        "blocked_by_arabguard": False
+        "blocked_by_arabguard": False,
+        "completion": complete_result if is_compromised else None,
+        "next_character_id": str(next_character.id) if next_character else None
     }

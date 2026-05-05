@@ -13,7 +13,6 @@ router = APIRouter(prefix="/chat", tags=["Chat"])
 
 class ChatRequest(BaseModel):
     character_id: uuid.UUID
-    session_id: str
     message: str
 
 @router.post("/")
@@ -38,7 +37,6 @@ def chat(
         db=db,
         user_id=current_user.id,
         character_id=body.character_id,
-        session_id=body.session_id,
         user_message=body.message
     )
 

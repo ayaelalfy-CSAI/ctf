@@ -15,5 +15,6 @@ class Character(Base):
     secret_category = Column(String, nullable=False)  # ← اسم الـ category زي "apartment_numbers"
     success_msg = Column(String)
     prompt_template = Column(Text, nullable=False) # instructions to sent to the model
-    points_required = Column(Integer, default=0)
+    points_required = Column(Integer, default=0)   # عدد النقاط اللي اليوزر محتاجه عشان يفتح الشخصية دي
+    points_reward = Column(Integer, default=10)   # عدد النقاط اللي اليوزر بياخدها لما يكمل الشخصية دي
     avatar = Column(String, nullable=True)
