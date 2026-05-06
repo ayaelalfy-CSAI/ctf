@@ -3,8 +3,48 @@ from sqlalchemy.orm import Session
 from core.database import get_db
 from core.deps import get_current_user
 from models.user import User
+from models.user_progress import UserProgress
+from models.character import Character
 
 router = APIRouter(prefix="/leaderboard", tags=["Leaderboard"])
+
+@router.get("/me")
+def get_my_rank(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    # جيب كل اليوزرز مرتبين بالنقاط
+    users = db.query(User).order_by(User.points.desc()).all()
+
+    # جيب الـ rank
+    rank = next((i + 1 for i, u in enumerate(users) if u.id == current_user.id), None)
+
+    # جيب آخر level اتخلص
+    last_progress = db.query(UserProgress).filter_by(
+        user_id=current_user.id,
+        completed=True
+    ).order_by(UserProgress.completed_at.desc()).first()
+
+    last_completed_level = None
+    if last_progress:
+        character = db.query(Character).filter_by(
+            id=last_progress.character_id
+        ).first()
+        if character:
+            last_completed_level = {
+                "character_id": str(character.id),
+                "persona": character.persona,
+                "level": character.level,
+                "completed_at": str(last_progress.completed_at)
+            }
+
+    return {
+        "rank": rank,
+        "total_players": len(users),
+        "points": current_user.points,
+        "name": current_user.name,
+        "last_completed_level": last_completed_level or 0
+    }
 
 @router.get("/")
 def get_leaderboard(
@@ -18,5 +58,6 @@ def get_leaderboard(
             "rank": rank,
             "name": user.name,
             "points": user.points,
+            "is_me": user.id == current_user.id
         })
     return result
