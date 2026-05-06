@@ -40,7 +40,6 @@ def get_my_rank(
 
     return {
         "rank": rank,
-        "total_players": len(users),
         "points": current_user.points,
         "name": current_user.name,
         "last_completed_level": last_completed_level or 0
