@@ -31,12 +31,7 @@ def get_my_rank(
             id=last_progress.character_id
         ).first()
         if character:
-            last_completed_level = {
-                "character_id": str(character.id),
-                "persona": character.persona,
-                "level": character.level,
-                "completed_at": str(last_progress.completed_at)
-            }
+            last_completed_level = character.level
 
     return {
         "rank": rank,
