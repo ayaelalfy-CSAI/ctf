@@ -33,11 +33,14 @@ def get_my_rank(
         if character:
             last_completed_level = character.level
 
+    total_characters = db.query(Character).count()        
+
     return {
         "rank": rank,
         "points": current_user.points,
         "name": current_user.name,
-        "last_completed_level": last_completed_level or 0
+        "last_completed_level": last_completed_level or 0,
+        "total_characters": total_characters
     }
 
 @router.get("/")
