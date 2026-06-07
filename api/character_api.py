@@ -1,37 +1,42 @@
+import uuid
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+
 from core.database import get_db
 from core.deps import get_current_user
 from models.user import User
-from services.character_service import get_characters_for_user, get_character_detail
-import uuid
+from repositories.character_repository import CharacterRepository
+from repositories.progress_repository import ProgressRepository
+from services.character_service import CharacterService
+from schemas.character_schema import CharacterUserResponse
 
 router = APIRouter(prefix="/characters", tags=["Characters"])
 
-@router.get("/")
+
+def get_character_service(db: Session = Depends(get_db)) -> CharacterService:
+    return CharacterService(
+        character_repo=CharacterRepository(db),
+        progress_repo=ProgressRepository(db),
+    )
+
+
+@router.get("/", response_model=list[CharacterUserResponse])
 def get_characters(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    service: CharacterService = Depends(get_character_service),
+    current_user: User = Depends(get_current_user),
 ):
-    return get_characters_for_user(db, current_user.id, current_user.points)
+    return service.get_characters_for_user(current_user.id)
 
 
-@router.get("/{character_id}")
+@router.get("/{character_id}", response_model=CharacterUserResponse)
 def get_character(
     character_id: uuid.UUID,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    service: CharacterService = Depends(get_character_service),
+    current_user: User = Depends(get_current_user),
 ):
-    result = get_character_detail(
-        db,
-        current_user.id,
-        character_id,
-        current_user.points  # ← ده الناقص
-    )
+    result = service.get_character_detail(current_user.id, character_id)
     if not result:
         raise HTTPException(status_code=404, detail="Character not found")
-    if result["status"] == "locked":
+    if result.status == "locked":
         raise HTTPException(status_code=403, detail="Character is locked!")
     return result

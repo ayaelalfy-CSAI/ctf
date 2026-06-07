@@ -1,36 +1,58 @@
+import uuid
 from pydantic import BaseModel
 from typing import Optional
-
+ 
+ 
+# ─── Input ────────────────────────────────────────────────────────────────────
+ 
 class CharacterCreate(BaseModel):
     title: str
-    level: int = 1
+    level: int
     persona: str
-    persona_desc: Optional[str] = None
+    persona_desc: str
     target: str
     secret_category: str
-    success_msg: Optional[str] = None
+    success_msg: str
     prompt_template: str
-    points_required: int = 10
-    avatar: Optional[str] = None
-
-class CharacterResponse(BaseModel):
-    id: str
-    title: str
-    strength: str
-    persona: str
-    persona_desc: Optional[str]
-    target: str
-    category: Optional[str]
-    success_msg: Optional[str]
+    points_required: int
     points_reward: int
-    is_unlocked: bool
-
+    avatar: Optional[str] = None
+ 
+ 
+# ─── Admin responses (full data, no user-specific fields) ─────────────────────
+ 
+class CharacterAdminResponse(BaseModel):
+    id: uuid.UUID
+    title: str
+    level: int
+    persona: str
+    persona_desc: str
+    target: str
+    secret_category: str
+    success_msg: str
+    prompt_template: str
+    points_required: int
+    points_reward: int
+    avatar: Optional[str] = None
+ 
     class Config:
         from_attributes = True
-
-class CharacterStatusResponse(BaseModel):
-    id: str
+ 
+ 
+# ─── User responses (no sensitive fields like prompt_template) ────────────────
+ 
+class CharacterUserResponse(BaseModel):
+    id: uuid.UUID
+    title: str
+    level: int
     persona: str
-    avatar: Optional[str]
-    status: str  # completed / active / locked
-
+    persona_desc: str
+    target: str
+    avatar: Optional[str] = None
+    points_required: int
+    points_reward: int
+    status: str  # "active" | "locked" | "completed"
+ 
+    class Config:
+        from_attributes = True
+ 
