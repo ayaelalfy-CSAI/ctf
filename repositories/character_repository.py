@@ -1,4 +1,3 @@
-
 import uuid
 from sqlalchemy.orm import Session
 from models.character import Character

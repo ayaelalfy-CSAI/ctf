@@ -8,8 +8,7 @@ from api.admin_api import router as admin_router
 from api.leaderboard_api import router as leaderboard_router
 from api.character_api import router as character_router
 from api.test_api import router as test_router
-import models
-
+from fastapi.staticfiles import StaticFiles
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,7 +35,10 @@ app.include_router(leaderboard_router)
 app.include_router(character_router)
 app.include_router(test_router)
 
-# Root endpoint عشان الصفحة مش تبقى فاضية
+app.mount("/avatars", StaticFiles(directory="avatars"), name="avatars")
+
+
+# Root endpoint
 @app.get("/")
 async def read_root():
     return {

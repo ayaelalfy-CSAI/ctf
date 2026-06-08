@@ -55,4 +55,15 @@ class CharacterUserResponse(BaseModel):
  
     class Config:
         from_attributes = True
+
+
+class CharacterListItem(BaseModel):
+    id: uuid.UUID
+    title: str
+    persona_desc: str
+    avatar: Optional[str] = None
+    status: str
+
+    class Config:
+        from_attributes = True        
  

@@ -6,6 +6,7 @@ from schemas.character_schema import (
     CharacterCreate,
     CharacterAdminResponse,
     CharacterUserResponse,
+    CharacterListItem,
 )
  
  
@@ -89,6 +90,25 @@ class CharacterService:
             status=status,
         )
 
+
+    def get_characters_summary(self, user_id: uuid.UUID) -> list[CharacterListItem]:
+      characters = self.character_repo.get_all_ordered()
+      result = []
+
+      for c in characters:
+        status = self.progress_repo.get_character_status(user_id, c)
+
+        result.append(
+            CharacterListItem(
+                id=c.id,
+                title=c.title,
+                persona_desc=c.persona_desc,
+                avatar=c.avatar,
+                status=status,
+            )
+        )
+
+      return result
 
 
 
