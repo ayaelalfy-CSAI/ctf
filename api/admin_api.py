@@ -81,6 +81,5 @@ def _serialize_log(log) -> dict:
         "arabguard_trace":    trace.get("arabguard_trace"),
         "character":          trace.get("character"),
         "target":             trace.get("target"),
-        "secret_used":        trace.get("secret_used"),
         "blocked":            trace.get("blocked", False),
     }

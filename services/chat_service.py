@@ -160,7 +160,7 @@ class ChatService:
                         {"role": "system", "content": system_prompt},
                         {"role": "user",   "content": user_input},
                     ],
-                    max_tokens=100,
+                    max_tokens=300,
                     temperature=0.8,
                     top_p=0.9,
                     frequency_penalty=0.6,
