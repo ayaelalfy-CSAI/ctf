@@ -98,7 +98,7 @@ def upload_avatar(
  
     return {
         "filename": filename,
-        "avatar_url": f"/avatars/{filename}",
+        "avatar_url": f"http://127.0.0.1:8000/avatars/{filename}",
     }
  
 
