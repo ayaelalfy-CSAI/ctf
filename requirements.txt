@@ -11,3 +11,4 @@ python-jose[cryptography]
 passlib[bcrypt]
 groq
 gradio-client
+python-multipart

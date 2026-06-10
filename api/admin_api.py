@@ -1,6 +1,10 @@
+import shutil
 import uuid
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
+
+import shutil
+from pathlib import Path
 
 from core.database import get_db
 from core.deps import get_admin_user
@@ -11,6 +15,9 @@ from services.character_service import CharacterService
 from schemas.character_schema import CharacterCreate, CharacterAdminResponse
 
 router = APIRouter(prefix="/admin", tags=["Admin"])
+
+AVATARS_DIR = Path("avatars")
+ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
 
 def get_character_service(db: Session = Depends(get_db)) -> CharacterService:
@@ -55,6 +62,46 @@ def delete_character(
     admin: User = Depends(get_admin_user),
 ):
     return service.delete_character(character_id)
+
+
+
+# ------------------------------------------------------------------
+# Avatar upload
+# ------------------------------------------------------------------
+ 
+@router.post("/upload-avatar")
+def upload_avatar(
+    file: UploadFile = File(...),
+    admin: User = Depends(get_admin_user),
+):
+    """
+    Upload a character avatar image.
+    Returns the URL to use in the avatar field when creating a character.
+    Allowed: .jpg / .jpeg / .png / .webp
+    """
+    # Validate extension
+    ext = Path(file.filename).suffix.lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"File type '{ext}' not allowed. Use: {ALLOWED_EXTENSIONS}",
+        )
+ 
+    # Use original filename (or generate unique name to avoid collisions)
+    filename = f"{uuid.uuid4().hex}{ext}"
+    save_path = AVATARS_DIR / filename
+ 
+    # Save file
+    AVATARS_DIR.mkdir(exist_ok=True)
+    with save_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+ 
+    return {
+        "filename": filename,
+        "avatar_url": f"/avatars/{filename}",
+    }
+ 
+
 
 
 @router.get("/threat-logs")
