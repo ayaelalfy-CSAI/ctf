@@ -9,8 +9,9 @@ class ChatRequest(BaseModel):
  
  
 class CompletionResult(BaseModel):
-    completed: bool
-    new_points: int | None = None
+    message: str
+    points_added: int
+    total_points: int
  
  
 class ChatResponse(BaseModel):
