@@ -14,7 +14,7 @@ def get_my_rank(
     current_user: User = Depends(get_current_user)
 ):
     # جيب كل اليوزرز مرتبين بالنقاط
-    users = db.query(User).order_by(User.points.desc()).all()
+    users = db.query(User).filter(User.role == "user").order_by(User.points.desc()).all()
 
     # جيب الـ rank
     rank = next((i + 1 for i, u in enumerate(users) if u.id == current_user.id), None)
