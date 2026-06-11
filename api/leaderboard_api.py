@@ -13,13 +13,13 @@ def get_my_rank(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # جيب كل اليوزرز مرتبين بالنقاط
+    
     users = db.query(User).filter(User.role == "user").order_by(User.points.desc()).all()
 
-    # جيب الـ rank
+  
     rank = next((i + 1 for i, u in enumerate(users) if u.id == current_user.id), None)
 
-    # جيب آخر level اتخلص
+   
     last_progress = db.query(UserProgress).filter_by(
         user_id=current_user.id,
         completed=True
